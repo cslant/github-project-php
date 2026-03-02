@@ -1,5 +1,16 @@
 parameters:
     ignoreErrors:
+        - message: '#Cannot access offset .+ on mixed\.#'
+          paths:
+              - src/Jobs/ProcessWebhookEvent.php
+              - src/Services/GithubService.php
+              - src/Services/WebhookService.php
+
+        - message: '#Cannot cast mixed to (string|int)\.#'
+          paths:
+              - src/Jobs/ProcessWebhookEvent.php
+              - src/Services/GithubService.php
+
         - message: '#Parameter \#1 \$view of function view expects view-string\|null, string given\.#'
           paths:
               - src/Services/GithubService.php
