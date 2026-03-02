@@ -15,7 +15,8 @@ class WebhookAction
     public function __construct(
         protected readonly WebhookService $webhookService,
         protected readonly GithubService $githubService,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws Throwable
