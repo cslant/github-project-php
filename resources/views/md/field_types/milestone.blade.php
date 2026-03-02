@@ -1,8 +1,8 @@
-@if($fromValue != null && $toValue != null)
+@if($fromValue !== null && $toValue !== null)
     **`{{ $fieldName }}`** has been updated:
     - From: **`{{ $fromValue['title'] }}`**
     - To: **`{{ $toValue['title'] }}`**
-@elseif ($toValue == null)
+@elseif ($toValue === null)
     **`{{ $fieldName }}`** has been removed from the issue.
 @else
     **`{{ $fieldName }}`** has been set to **`{{ $toValue['title'] }}`**.

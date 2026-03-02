@@ -1,32 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CSlant\GitHubProject\Actions;
 
 use CSlant\GitHubProject\Services\GithubService;
 use CSlant\GitHubProject\Services\WebhookService;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 use Throwable;
 
 class WebhookAction
 {
-    protected WebhookService $webhookService;
-
-    protected GithubService $githubService;
-
-    public function __construct(WebhookService $webhookService, GithubService $githubService)
-    {
-        $this->webhookService = $webhookService;
-        $this->githubService = $githubService;
-    }
+    public function __construct(
+        protected readonly WebhookService $webhookService,
+        protected readonly GithubService $githubService,
+    ) {}
 
     /**
      * @throws Throwable
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $request = Request::createFromGlobals();
-
         if (!$this->webhookService->eventRequestApproved($request)) {
             return response()->json(['message' => __('github-project::github-project.error.event.denied')], 403);
         }

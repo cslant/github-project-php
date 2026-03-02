@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CSlant\GitHubProject\Services;
 
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 
 class WebhookService
 {
     public function eventRequestApproved(Request $request): bool
     {
-        $event = $request->server->get('HTTP_X_GITHUB_EVENT');
+        $event = $request->header('X-GitHub-Event', '');
 
-        return $this->eventApproved((string) $event);
+        return $this->eventApproved($event);
     }
 
     protected function eventApproved(string $event): bool
@@ -52,13 +54,12 @@ class WebhookService
 
     /**
      * @param  array<string, mixed>  $payload
-     *
-     * @return null|JsonResponse
      */
     public function validatePayload(array $payload): ?JsonResponse
     {
-        if ($this->validatePayloadForComment($payload) !== null) {
-            return $this->validatePayloadForComment($payload);
+        $commentValidation = $this->validatePayloadForComment($payload);
+        if ($commentValidation !== null) {
+            return $commentValidation;
         }
 
         if (!$this->isStatusCommentEnabled($payload)) {
@@ -70,8 +71,6 @@ class WebhookService
 
     /**
      * @param  array<string, mixed>  $payload
-     *
-     * @return null|JsonResponse
      */
     public function validatePayloadForComment(array $payload): ?JsonResponse
     {
@@ -94,16 +93,11 @@ class WebhookService
      * Check if the field name is "Status" and if status comments are enabled.
      *
      * @param  array<string, mixed>  $payload
-     *
-     * @return bool
      */
     protected function isStatusCommentEnabled(array $payload): bool
     {
-        $fieldType = $payload['changes']['field_value']['field_name'] ?? '';
+        $fieldName = $payload['changes']['field_value']['field_name'] ?? '';
 
-        return !(
-            (string) $fieldType === 'Status'
-            && !config('github-project.enable_status_comment')
-        );
+        return $fieldName !== 'Status' || (bool) config('github-project.enable_status_comment');
     }
 }

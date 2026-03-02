@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CSlant\GitHubProject\Jobs;
 
 use CSlant\GitHubProject\Services\GithubService;
@@ -17,54 +19,29 @@ class ProcessAggregatedEvents implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    protected string $nodeId;
+    public function __construct(
+        protected readonly string $nodeId,
+    ) {}
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(string $nodeId)
+    public function handle(GithubService $githubService): void
     {
-        $this->nodeId = $nodeId;
-    }
+        /** @var string $cacheKeyPrefix */
+        $cacheKeyPrefix = config('github-project.comment_aggregation_cache_key', 'github-project-comment-aggregation');
+        $cacheKey = "{$cacheKeyPrefix}_{$this->nodeId}";
 
-    /**
-     * Execute the job.
-     */
-    public function handle(): void
-    {
-        $commentAggregationCacheKey = config('github-project.comment_aggregation_cache_key')."_{$this->nodeId}";
+        /** @var list<string> $eventMessages */
+        $eventMessages = Cache::pull($cacheKey, []);
 
-        /** @var array<string, mixed> $eventMessages */
-        $eventMessages = Cache::pull($commentAggregationCacheKey, []);
+        $message = implode("\n", $eventMessages);
 
-        $message = $this->aggregateMessages($eventMessages);
-        $author = Cache::pull($commentAggregationCacheKey.'_author', []);
-
-        Cache::forget($commentAggregationCacheKey);
-        Cache::forget($commentAggregationCacheKey.'_author');
+        /** @var array{name: string, html_url: string} $author */
+        $author = Cache::pull("{$cacheKey}_author", ['name' => 'Unknown', 'html_url' => '#']);
 
         $message .= view(
             'github-project::md.shared.author',
-            ['name' => $author['name'], 'html_url' => $author['html_url']]
+            ['name' => $author['name'], 'html_url' => $author['html_url']],
         )->render();
 
-        $githubService = new GithubService;
         $githubService->commentOnNode($this->nodeId, $message);
-    }
-
-    /**
-     * Aggregate messages from events.
-     *
-     * @param  array<string, mixed>  $eventMessages
-     *
-     * @return string
-     */
-    protected function aggregateMessages(array $eventMessages): string
-    {
-        $messages = array_map(function ($message) {
-            return $message;
-        }, $eventMessages);
-
-        return implode("\n", $messages);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'message' => 'Hello from the blog core!',
+    'message' => 'GitHub Project notification package.',
 
     'error' => [
         'message' => 'An error occurred.',

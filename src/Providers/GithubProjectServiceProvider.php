@@ -1,63 +1,36 @@
 <?php
 
-namespace CSlant\GithubProject\Providers;
+declare(strict_types=1);
+
+namespace CSlant\GitHubProject\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
 class GithubProjectServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap services.
-     *
-     * @return void
-     */
     public function boot(): void
     {
         $this->registerAssetLoading();
-
         $this->registerAssetPublishing();
     }
 
-    /**
-     * Register services.
-     *
-     * @return void
-     */
     public function register(): void
     {
-        $this->registerConfigs();
-
-        $this->registerCommands();
+        $this->mergeConfigFrom(__DIR__.'/../../config/github-project.php', 'github-project');
     }
 
     /**
-     * Get the services provided by the provider.
-     *
-     * @return null|array<string>
+     * @return array<int, string>
      */
-    public function provides(): ?array
+    public function provides(): array
     {
         return ['github-project'];
     }
 
-    /**
-     * @return void
-     */
-    protected function registerCommands(): void
-    {
-        $this->commands([
-            //
-        ]);
-    }
-
-    /**
-     * @return void
-     */
     protected function registerAssetPublishing(): void
     {
-        $configPath = __DIR__.'/../../config/github-project.php';
         $this->publishes([
-            $configPath => config_path('github-project.php'),
+            __DIR__.'/../../config/github-project.php' => config_path('github-project.php'),
         ], 'config');
 
         $this->publishes([
@@ -69,9 +42,6 @@ class GithubProjectServiceProvider extends ServiceProvider
         ], 'views');
     }
 
-    /**
-     * @return void
-     */
     protected function registerAssetLoading(): void
     {
         $routePath = __DIR__.'/../../routes/github-project.php';
@@ -80,38 +50,6 @@ class GithubProjectServiceProvider extends ServiceProvider
         }
 
         $this->loadTranslationsFrom(__DIR__.'/../../lang', 'github-project');
-
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'github-project');
-    }
-
-    /**
-     * Register configs.
-     *
-     * @return void
-     */
-    protected function registerConfigs(): void
-    {
-        $configDir = __DIR__.'/../../config';
-        $files = scandir($configDir);
-
-        if ($files === false) {
-            return;
-        }
-
-        foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
-                $configName = pathinfo($file, PATHINFO_FILENAME);
-                $configPath = $configDir.'/'.$file;
-
-                if (file_exists(config_path($configName.'.php'))) {
-                    config()->set($configName, array_merge(
-                        is_array(config($configName)) ? config($configName) : [],
-                        require $configPath
-                    ));
-                } else {
-                    $this->mergeConfigFrom($configPath, $configName);
-                }
-            }
-        }
     }
 }

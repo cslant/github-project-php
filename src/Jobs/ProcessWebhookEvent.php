@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CSlant\GitHubProject\Jobs;
 
 use Illuminate\Bus\Queueable;
@@ -16,46 +18,41 @@ class ProcessWebhookEvent implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /** @var array<string, mixed> */
-    protected array $eventData;
-
     /**
-     * Create a new job instance.
-     *
      * @param  array<string, mixed>  $eventData
      */
-    public function __construct(array $eventData)
-    {
-        $this->eventData = $eventData;
-    }
+    public function __construct(
+        protected readonly array $eventData,
+    ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
-        $nodeId = (string) $this->eventData['projects_v2_item']['content_node_id'];
-        $commentAggregationCacheKey = config('github-project.comment_aggregation_cache_key')."_{$nodeId}";
-        $commentAggregationTime = (int) config('github-project.comment_aggregation_time');
+        $nodeId = (string) ($this->eventData['projects_v2_item']['content_node_id'] ?? '');
 
-        $eventMessages = (array) Cache::get($commentAggregationCacheKey, []);
+        /** @var string $cacheKeyPrefix */
+        $cacheKeyPrefix = config('github-project.comment_aggregation_cache_key', 'github-project-comment-aggregation');
+        $cacheKey = "{$cacheKeyPrefix}_{$nodeId}";
+        $aggregationTime = (int) config('github-project.comment_aggregation_time', 20);
+
+        /** @var list<string> $eventMessages */
+        $eventMessages = Cache::get($cacheKey, []);
         $eventMessages[] = view('github-project::md.shared.content', ['payload' => $this->eventData])->render();
 
-        Cache::put($commentAggregationCacheKey, $eventMessages, now()->addSeconds($commentAggregationTime + 3));
+        Cache::put($cacheKey, $eventMessages, now()->addSeconds($aggregationTime + 3));
 
-        if (!Cache::has($commentAggregationCacheKey.'_author')) {
+        if (!Cache::has("{$cacheKey}_author")) {
             Cache::put(
-                $commentAggregationCacheKey.'_author',
+                "{$cacheKey}_author",
                 [
-                    'name' => $this->eventData['sender']['login'],
-                    'html_url' => $this->eventData['sender']['html_url'],
+                    'name' => $this->eventData['sender']['login'] ?? 'Unknown',
+                    'html_url' => $this->eventData['sender']['html_url'] ?? '#',
                 ],
-                now()->addSeconds($commentAggregationTime + 3)
+                now()->addSeconds($aggregationTime + 3),
             );
         }
 
         if (count($eventMessages) === 1) {
-            ProcessAggregatedEvents::dispatch($nodeId)->delay(now()->addSeconds($commentAggregationTime));
+            ProcessAggregatedEvents::dispatch($nodeId)->delay(now()->addSeconds($aggregationTime));
         }
     }
 }

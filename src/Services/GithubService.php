@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CSlant\GitHubProject\Services;
 
 use CSlant\GitHubProject\Jobs\ProcessWebhookEvent;
@@ -8,17 +10,14 @@ use Github\Client;
 
 class GithubService
 {
-    protected Client $client;
+    protected readonly Client $client;
 
     public function __construct(?Client $client = null)
     {
-        $this->client = $client ?? new Client;
+        $this->client = $client ?? new Client();
     }
 
     /**
-     * @param  string  $contentNodeId
-     * @param  string  $message
-     *
      * @return array<string, mixed>
      */
     public function commentOnNode(string $contentNodeId, string $message): array
@@ -43,7 +42,9 @@ class GithubService
             ],
         ];
 
-        $this->client->authenticate((string) config('github-project.github.access_token'), null, AuthMethod::ACCESS_TOKEN);
+        /** @var string $token */
+        $token = config('github-project.github.access_token', '');
+        $this->client->authenticate($token, null, AuthMethod::ACCESS_TOKEN);
 
         return $this->client->graphql()->execute($query, $variables);
     }
@@ -62,14 +63,12 @@ class GithubService
         }
 
         $this->commentOnNode(
-            (string) $payload['projects_v2_item']['content_node_id'],
-            $this->generateCommentMessage($payload)
+            (string) ($payload['projects_v2_item']['content_node_id'] ?? ''),
+            $this->generateCommentMessage($payload),
         );
     }
 
     /**
-     * Generate the comment message from payload without posting it
-     *
      * @param  array<string, mixed>  $payload
      *
      * @throws \Throwable
