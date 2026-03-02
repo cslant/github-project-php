@@ -3,6 +3,18 @@ parameters:
         - message: '#Parameter \#1 \$prefix of static method Illuminate\\Support\\Facades\\Route::prefix\(\) expects string, mixed given\.#'
           path: routes/*.php
 
+        - message: '#Part \$routePrefix \(mixed\) of encapsed string cannot be cast to string\.#'
+          path: routes/*.php
+
+        - message: '#Cannot cast mixed to string#'
+          path: src/*.php
+
+        - message: '#Cannot cast mixed to int#'
+          path: src/*.php
+
+        - message: '#Cannot access offset .+ on mixed#'
+          path: src/*.php
+
         - message: '#Parameter \#1 \$view of function view expects view-string\|null, string given\.#'
           paths:
               - src/Services/GithubService.php
