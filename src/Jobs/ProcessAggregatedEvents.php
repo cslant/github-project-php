@@ -21,7 +21,8 @@ class ProcessAggregatedEvents implements ShouldQueue
 
     public function __construct(
         protected readonly string $nodeId,
-    ) {}
+    ) {
+    }
 
     public function handle(GithubService $githubService): void
     {

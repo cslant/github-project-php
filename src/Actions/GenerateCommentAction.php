@@ -15,7 +15,8 @@ class GenerateCommentAction
     public function __construct(
         protected readonly WebhookService $webhookService,
         protected readonly GithubService $githubService,
-    ) {}
+    ) {
+    }
 
     /**
      * Generate a comment message from the webhook payload.
