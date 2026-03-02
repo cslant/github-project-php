@@ -29,20 +29,15 @@ class GenerateCommentAction
 
         try {
             if ($request->isJson()) {
-                $jsonContent = $request->json();
-                $payload = is_object($jsonContent) && method_exists($jsonContent, 'all')
-                    ? $jsonContent->all()
-                    : (array) $jsonContent;
+                /** @var array<string, mixed> $payload */
+                $payload = $request->json()->all();
             } else {
-                $payload = json_decode($request->getContent(), true);
+                /** @var array<string, mixed> $payload */
+                $payload = (array) json_decode($request->getContent(), true);
             }
 
-            if (!empty($payload['payload'])) {
+            if (isset($payload['payload']) && is_array($payload['payload'])) {
                 $payload = $payload['payload'];
-            }
-
-            if (is_string($payload)) {
-                $payload = json_decode($payload, true);
             }
 
             if ($validate) {

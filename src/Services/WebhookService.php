@@ -42,6 +42,7 @@ class WebhookService
      */
     protected function hasFieldTemplate(array $payload): bool
     {
+        /** @var string $fieldType */
         $fieldType = $payload['changes']['field_value']['field_type'] ?? '';
 
         return view()->exists('github-project::md.field_types.'.$fieldType);
