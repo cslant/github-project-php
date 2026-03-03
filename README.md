@@ -54,12 +54,12 @@ composer require cslant/github-project-php
 
 ## Usage
 
-See the [GitHub Project PHP Documentation](https://docs.cslant.com/github-project-php/usage) for detailed usage instructions.
+See the [GitHub Project PHP Documentation](https://docs.cslant.com/github-project-php/advanced/templates) for detailed usage instructions.
 
 ### Customizing Templates
 
 ```bash
-php artisan vendor:publish --tag=github-project-views
+php artisan vendor:publish --provider="CSlant\GitHubProject\GithubProjectServiceProvider" --tag="views"
 ```
 
 This copies templates to `resources/views/vendor/github-project/md/field_types/`.
