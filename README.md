@@ -1,5 +1,7 @@
 # GitHub Project PHP
 
+<img width="1240" height="874" alt="github-project-php-example" src="https://github.com/user-attachments/assets/80f90089-b30a-4514-b6e2-c5e5e9e009b9" />
+
 <p align="center">
 <a href="#"><img src="https://img.shields.io/github/license/cslant/github-project-php.svg?style=flat-square" alt="License"></a>
 <a href="https://github.com/cslant/github-project-php/releases"><img src="https://img.shields.io/github/release/cslant/github-project-php.svg?style=flat-square" alt="Latest Version"></a>
